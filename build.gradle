@@ -1,0 +1,102 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+configurations.implementation.setCanBeResolved(true)
+
+
+
+
+// tag::repositories[]
+repositories{
+    mavenCentral()
+   flatDir name: 'localRepository',dirs: './lib/'
+}
+// end::repositories[]
+
+// tag::dependencies[]
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+
+dependencies {
+    implementation fileTree(dir: 'lib', include: '*.jar')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation "joda-time:joda-time:2.2"
+    implementation "junit:junit:4.12"
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'org.apache.commons:commons-lang3:3.5'
+    testImplementation 'junit:junit:4.13'
+  implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
+  // implementation "nu.pattern:opencv:2.4.9-7"
+  // https://mvnrepository.com/artifact/org.opencv/opencv
+  //implementation("org.opencv:opencv:2.4.11")
+  //implementation("org.opencv:opencv-jar:2.4.6.1")
+  // implementation("org.openpnp:opencv:4.5.5-1")
+  //implementation("org.bytedeco.javacpp-presets:opencv;4.0.1-1.4.4")
+
+
+}
+
+
+sourceSets.main.java.srcDirs = ['app']
+
+mainClassName = 'charucotest.App'
+
+run {
+    //jvmArgs = ['-D java.library.path=./lib/']
+    systemProperty 'java.library.path','/home/bussiere/Workspace/CustomTest/charucotest/lib/'
+}
+tasks.withType(Tar){
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType(Zip){
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.withType(Jar){
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+
+task fatJar(type: Jar) {
+  archiveVersion =  '0.1.0'
+  
+	manifest {
+    attributes('Implementation-Title': 'Gradle Jar File Example', 'Implementation-Version': archiveVersion,'Main-Class': mainClassName)
+    }
+    archiveBaseName  = project.name + '-all'
+    from { configurations.implementation.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+// tag::jar[]
+jar {
+    archiveBaseName = 'charucotest'
+    archiveVersion =  '0.1.0'
+    manifest {
+    attributes(
+      'Class-Path': configurations.implementation.collect { it.getName() }.join(' '),
+      'Main-Class': mainClassName
+    )
+  }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// end::jar[]
+
+// tag::dependencies[]
+//sourceCompatibility = 1.8
+//targetCompatibility = 1.8
+
+//dependencies {
+    //implementation "joda-time:joda-time:2.2"
+    //testImplementation "junit:junit:4.12"
+//}
+
